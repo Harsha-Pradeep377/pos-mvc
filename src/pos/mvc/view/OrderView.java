@@ -5,16 +5,20 @@
 package pos.mvc.view;
 
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import pos.mvc.controller.CustomerController;
 import pos.mvc.controller.ItemController;
+import pos.mvc.controller.OrderController;
 import pos.mvc.model.CustomerModel;
 import pos.mvc.model.ItemModel;
 import pos.mvc.model.OrderDetailModel;
+import pos.mvc.model.OrderModel;
 
 /**
  *
@@ -22,7 +26,8 @@ import pos.mvc.model.OrderDetailModel;
  */
 public class OrderView extends javax.swing.JFrame {
      private CustomerController customerController;
-     private ItemController itemController;
+     private ItemController itemController; 
+     private OrderController orderController; 
      ArrayList<OrderDetailModel> orderDetailModels = new ArrayList<>();
     /**
      * Creates new form OrderView
@@ -30,6 +35,7 @@ public class OrderView extends javax.swing.JFrame {
     public OrderView() {
         customerController = new CustomerController();
         itemController = new ItemController();
+        orderController = new OrderController();
         initComponents();
         loadTable();
     }
@@ -171,11 +177,12 @@ public class OrderView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(formPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(formPanelLayout.createSequentialGroup()
-                        .addGroup(formPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(customerText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(custdataLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(searchcustomerButton)
-                            .addComponent(customerLabel))
+                        .addGroup(formPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(custdataLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(formPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(customerText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(searchcustomerButton)
+                                .addComponent(customerLabel)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -210,6 +217,11 @@ public class OrderView extends javax.swing.JFrame {
         jScrollPane2.setViewportView(itemTable);
 
         placeorderButton.setText("Place Order");
+        placeorderButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                placeorderButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout customerPanelLayout = new javax.swing.GroupLayout(customerPanel);
         customerPanel.setLayout(customerPanelLayout);
@@ -276,6 +288,10 @@ public class OrderView extends javax.swing.JFrame {
     private void additemButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_additemButtonActionPerformed
         addToTable();        
     }//GEN-LAST:event_additemButtonActionPerformed
+
+    private void placeorderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_placeorderButtonActionPerformed
+        placeOrder();
+    }//GEN-LAST:event_placeorderButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -393,5 +409,24 @@ public class OrderView extends javax.swing.JFrame {
         itemidText.setText("");
         discountText.setText("");
         qtyText.setText("");
+    }
+
+    private void placeOrder() {
+         try {
+             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+             OrderModel orderModel = new OrderModel(orderidText.getText(), sdf.format(new Date()), customerText.getText());
+             String result = orderController.placeOrder(orderModel, orderDetailModels);
+             JOptionPane.showMessageDialog(this, result);
+         } catch (SQLException ex) {
+             Logger.getLogger(OrderView.class.getName()).log(Level.SEVERE, null, ex);
+             JOptionPane.showMessageDialog(this, ex.getMessage());
+         }
+         clearForm();
+    }
+
+    private void clearForm() {
+        loadTable();
+        orderidText.setText("");
+        customerText.setText("");
     }
 }
